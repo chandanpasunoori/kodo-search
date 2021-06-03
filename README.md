@@ -2,6 +2,8 @@
 
 [Kodo](https://github.com/chandanpasunoori/kodo-search-sample) Search Sample
 
+Sample project with Nest.js microservices using NATS as bridge.
+
 ## Installation
 
 ```bash
