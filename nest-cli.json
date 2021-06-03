@@ -1,4 +1,30 @@
 {
   "collection": "@nestjs/schematics",
-  "sourceRoot": "src"
+  "sourceRoot": "apps/kodo-search/src",
+  "monorepo": true,
+  "root": "apps/kodo-search",
+  "compilerOptions": {
+    "webpack": true,
+    "tsConfigPath": "apps/kodo-search/tsconfig.app.json"
+  },
+  "projects": {
+    "kodo-search": {
+      "type": "application",
+      "root": "apps/kodo-search",
+      "entryFile": "main",
+      "sourceRoot": "apps/kodo-search/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/kodo-search/tsconfig.app.json"
+      }
+    },
+    "search-service": {
+      "type": "application",
+      "root": "apps/search-service",
+      "entryFile": "main",
+      "sourceRoot": "apps/search-service/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/search-service/tsconfig.app.json"
+      }
+    }
+  }
 }
