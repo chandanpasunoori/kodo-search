@@ -12,9 +12,9 @@ export class SearchServiceController {
   }
 
   @MessagePattern({ cmd: 'search' })
-  async search(@Payload() searchTerm: { searchTerm: string, sort: string }, @Ctx() context: NatsContext): Promise<any> {
-    console.log("search term: ", searchTerm);
-    console.log(`Subject: ${context.getSubject()}`);
+  async search(@Payload() searchTerm: { searchTerm: string, sort: string, page: number, pageSize: number  }, @Ctx() context: NatsContext): Promise<any> {
+    // console.log("search term: ", searchTerm);
+    // console.log(`Subject: ${context.getSubject()}`);
     return this.searchServiceService.search(searchTerm);
   }
 }

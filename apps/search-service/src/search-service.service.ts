@@ -614,17 +614,25 @@ const options = {
 }
 const fuse = new Fuse(searchStorage, options)
 const exactMatchRegex = /"([\s\w]+)"/g;
+Object.defineProperty(Array.prototype, 'chunk', {
+  value: function (chunkSize) {
+    var R = [];
+    for (var i = 0; i < this.length; i += chunkSize)
+      R.push(this.slice(i, i + chunkSize));
+    return R;
+  }
+});
 @Injectable()
 export class SearchServiceService {
   getHello(): string {
     return 'Hello World!';
   }
-  async search(query: { searchTerm: string, sort: string }): Promise<any> {
+  async search(query: { searchTerm: string, sort: string, page: number, pageSize: number }): Promise<any> {
     let found = query.searchTerm.length > 0 ? fuse.search(query.searchTerm).map(i => i.item) : searchStorage;
 
     const matches = query.searchTerm.matchAll(exactMatchRegex);
     for (const match of matches) {
-      found = found.filter(i => i.name.indexOf(match[1]) > -1);
+      found = found.filter(i => i.name.toLowerCase().indexOf(match[1].toLowerCase()) > -1);
     }
 
     query.sort.split(",").forEach(field => {
@@ -635,6 +643,15 @@ export class SearchServiceService {
         found = found.sort((a, b) => new Date(b[field]).getTime() - new Date(a[field]).getTime());
       }
     })
-    return found;
+    let result = found.reduce((resultArray, item, index) => {
+      const chunkIndex = Math.floor(index / query.pageSize)
+      if (!resultArray[chunkIndex]) {
+        resultArray[chunkIndex] = []
+      }
+      resultArray[chunkIndex].push(item)
+      return resultArray
+    }, [])
+    const response = query.page - 1 < result.length ? result[query.page - 1] : [];
+    return { result: response, page: query.page, totalItems: found.length, totalPages: result.length, pageSize: query.pageSize };
   }
 }

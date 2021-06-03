@@ -12,7 +12,7 @@ export class AppController {
   }
 
   @Get("/search")
-  async search(@Query("searchTerm") searchTerm: string, @Query("sort") sort: string): Promise<Observable<any>> {
-    return this.appService.search({ searchTerm: searchTerm, sort: sort });
+  async search(@Query("searchTerm") searchTerm: string, @Query("sort") sort: string, @Query("page") page: number = 1, @Query("pageSize") pageSize: number = 10): Promise<Observable<any>> {
+    return this.appService.search({ searchTerm: searchTerm, sort: sort, page, pageSize });
   }
 }

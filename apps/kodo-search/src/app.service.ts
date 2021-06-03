@@ -11,8 +11,8 @@ export class AppService {
     return 'Hello World!';
   }
 
-  async search(query: { searchTerm: string, sort: string }): Promise<Observable<any>> {
-    console.log("firing search query: ", query);
+  async search(query: { searchTerm: string, sort: string, page: number, pageSize: number }): Promise<Observable<any>> {
+    // console.log("firing search query: ", query);
     return this.searchService.send({ cmd: "search" }, query);
   }
 }
