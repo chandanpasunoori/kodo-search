@@ -1,7 +1,10 @@
 import { Injectable } from '@nestjs/common';
+import { SearchRequest } from 'apps/kodo-search/src/dto/search-request.input';
 import Fuse from 'fuse.js'
+import { SearchItem } from './dto/search-item';
+import { SearchResult } from './dto/search-result';
 
-const searchStorage: { name: string, image: string, description: string, dateLastEdited: string }[] = [
+const searchStorage: SearchItem[] = [
   {
     "name": "Customer Assurance Liaison",
     "image": "http://lorempixel.com/640/480",
@@ -612,46 +615,41 @@ const options = {
   useExtendedSearch: false,
   keys: ['name', 'description']
 }
+
 const fuse = new Fuse(searchStorage, options)
+
 const exactMatchRegex = /"([\s\w]+)"/g;
-Object.defineProperty(Array.prototype, 'chunk', {
-  value: function (chunkSize) {
-    var R = [];
-    for (var i = 0; i < this.length; i += chunkSize)
-      R.push(this.slice(i, i + chunkSize));
-    return R;
-  }
-});
+
 @Injectable()
 export class SearchServiceService {
   getHello(): string {
     return 'Hello World!';
   }
-  async search(query: { searchTerm: string, sort: string, page: number, pageSize: number }): Promise<any> {
-    let found = query.searchTerm.length > 0 ? fuse.search(query.searchTerm).map(i => i.item) : searchStorage;
 
-    const matches = query.searchTerm.matchAll(exactMatchRegex);
+  async search(searchRequest: SearchRequest): Promise<SearchResult> {
+    let found = searchRequest.searchTerm.length > 0 ? fuse.search(searchRequest.searchTerm).map(i => i.item) : searchStorage;
+
+    const matches = searchRequest.searchTerm.matchAll(exactMatchRegex);
     for (const match of matches) {
       found = found.filter(i => i.name.toLowerCase().indexOf(match[1].toLowerCase()) > -1);
     }
 
-    query.sort.split(",").forEach(field => {
-      if (field.indexOf("title") > -1) {
-        found = found.sort((a, b) => a[field] - b[field]);
-      }
-      if (field.indexOf("dateLastEdited") > -1) {
-        found = found.sort((a, b) => new Date(b[field]).getTime() - new Date(a[field]).getTime());
-      }
-    })
-    let result = found.reduce((resultArray, item, index) => {
-      const chunkIndex = Math.floor(index / query.pageSize)
+    if (searchRequest.sort === "title") {
+      found = found.sort((a, b) => a[searchRequest.sort] - b[searchRequest.sort]);
+    }
+    if (searchRequest.sort === "dateLastEdited") {
+      found = found.sort((a, b) => new Date(b[searchRequest.sort]).getTime() - new Date(a[searchRequest.sort]).getTime());
+    }
+    const searchItemChunks: SearchItem[][] = found.reduce((resultArray, item, index) => {
+      const chunkIndex = Math.floor(index / searchRequest.pageSize)
       if (!resultArray[chunkIndex]) {
         resultArray[chunkIndex] = []
       }
       resultArray[chunkIndex].push(item)
       return resultArray
     }, [])
-    const response = query.page - 1 < result.length ? result[query.page - 1] : [];
-    return { result: response, page: query.page, totalItems: found.length, totalPages: result.length, pageSize: query.pageSize };
+    const searchItems: SearchItem[] = searchRequest.page - 1 < searchItemChunks.length ? searchItemChunks[searchRequest.page - 1] : [];
+    const reply: SearchResult = { result: searchItems, page: searchRequest.page, totalItems: found.length, totalPages: searchItemChunks.length, pageSize: searchRequest.pageSize }
+    return reply;
   }
 }

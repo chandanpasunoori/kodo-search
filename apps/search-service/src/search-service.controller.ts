@@ -1,5 +1,7 @@
 import { Controller, Get } from '@nestjs/common';
 import { MessagePattern, Payload, Ctx, NatsContext } from '@nestjs/microservices';
+import { SearchRequest } from '../../kodo-search/src/dto/search-request.input';
+import { SearchResult } from './dto/search-result';
 import { SearchServiceService } from './search-service.service';
 
 @Controller()
@@ -12,9 +14,9 @@ export class SearchServiceController {
   }
 
   @MessagePattern({ cmd: 'search' })
-  async search(@Payload() searchTerm: { searchTerm: string, sort: string, page: number, pageSize: number  }, @Ctx() context: NatsContext): Promise<any> {
+  async search(@Payload() searchRequest: SearchRequest, @Ctx() context: NatsContext): Promise<SearchResult> {
     // console.log("search term: ", searchTerm);
     // console.log(`Subject: ${context.getSubject()}`);
-    return this.searchServiceService.search(searchTerm);
+    return this.searchServiceService.search(searchRequest);
   }
 }
