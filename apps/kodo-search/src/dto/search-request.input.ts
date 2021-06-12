@@ -1,5 +1,4 @@
-import { ParseIntPipe } from '@nestjs/common';
-import { IsNumberString, IsInt, Max, Length } from 'class-validator';
+import { IsNumberString, Length } from 'class-validator';
 
 export class SearchRequest {
 

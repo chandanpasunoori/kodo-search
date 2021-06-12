@@ -14,10 +14,10 @@ $ npm install
 
 ```bash
 # search service
-$ npm run start search-service
+$ npm start search-service
 
 # kodo service
-$ npm run start kodo-service
+$ npm start kodo-service
 
 ```
 
